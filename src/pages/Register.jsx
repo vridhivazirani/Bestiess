@@ -10,8 +10,14 @@ export default function Register() {
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const { register, currentUser } = useAuth();
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (currentUser) {
+      navigate('/');
+    }
+  }, [currentUser, navigate]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -26,15 +32,14 @@ export default function Register() {
       setError('');
       setLoading(true);
       await register(email, password, username.toLowerCase(), displayName, "KawaiiGirl");
-      navigate('/');
     } catch (err) {
       if (err.message === "Firebase not configured") {
         setError("Firebase is missing configuration. Please update src/firebase.js with your keys.");
       } else {
-        setError("Failed to create an account. Emal may already be in use or password too weak.");
+        setError(`Failed to create account: ${err.message}`);
       }
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   return (

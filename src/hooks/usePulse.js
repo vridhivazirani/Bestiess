@@ -25,6 +25,9 @@ export function usePulse() {
       }));
       setUpdates(posts);
       setLoading(false);
+    }, (error) => {
+      console.error("Pulse error:", error);
+      setLoading(false);
     });
 
     return unsubscribe;

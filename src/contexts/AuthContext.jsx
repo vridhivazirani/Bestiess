@@ -64,16 +64,26 @@ export function AuthProvider({ children }) {
     const result = await signInWithPopup(auth, googleProvider);
     const user = result.user;
     
-    // Check if user document exists
+    // Check if user document exists, with a 4 second timeout fallback
     const docRef = doc(db, "users", user.uid);
-    const docSnap = await getDoc(docRef);
+    let docSnap;
+    try {
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Firestore connection timed out")), 4000)
+      );
+      docSnap = await Promise.race([getDoc(docRef), timeoutPromise]);
+    } catch (firebaseError) {
+      console.error("Firestore getDoc failed during Google Login:", firebaseError);
+      // We'll proceed by assuming no document exists so we at least let them into the app!
+      docSnap = { exists: () => false }; 
+    }
     
     if (!docSnap.exists()) {
       // Create new user doc
       const userDoc = {
         uid: user.uid,
         email: user.email,
-        username: user.email.split('@')[0] + Math.floor(Math.random() * 1000), // temp
+        username: (user.email || 'user').split('@')[0] + Math.floor(Math.random() * 1000), // temp
         displayName: user.displayName || 'New Bestie',
         avatar: "KawaiiGirl",
         bio: "New bestie in the hub! ✨",
@@ -85,7 +95,11 @@ export function AuthProvider({ children }) {
         settings: { theme: 0, privacy: 1, notifs: true, dnd: false },
         createdAt: new Date().toISOString()
       };
-      await setDoc(docRef, userDoc);
+      try {
+        await setDoc(docRef, userDoc);
+      } catch (err) {
+        console.error("Warning: Could not save new Google user to Firestore", err);
+      }
       setUserData(userDoc);
     } else {
       setUserData(docSnap.data());
@@ -110,11 +124,29 @@ export function AuthProvider({ children }) {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       if (user) {
-        // Fetch custom user data from Firestore
-        const docRef = doc(db, "users", user.uid);
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          setUserData(docSnap.data());
+        try {
+          // Fetch custom user data from Firestore with a 4 second timeout
+          // This prevents the app from hanging for 2 minutes if the user hasn't correctly enabled Firestore
+          const docRef = doc(db, "users", user.uid);
+          
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error("Firestore connection timed out. Is it enabled?")), 4000)
+          );
+          
+          const docSnap = await Promise.race([getDoc(docRef), timeoutPromise]);
+          
+          if (docSnap.exists()) {
+            setUserData(docSnap.data());
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+          // Fallback to a generic userData so the app still loads instantly
+          setUserData({ 
+            displayName: user.displayName || "Bestie", 
+            bio: "Update your bio!", 
+            coins: 100,
+            settings: { theme: 0, privacy: 1, notifs: true, dnd: false }
+          });
         }
       } else {
         setUserData(null);

@@ -30,6 +30,9 @@ export function useFriends() {
       const otherUsers = allUsers.filter(u => u.uid !== currentUser.uid);
       setFriends(otherUsers);
       setLoading(false);
+    }, (error) => {
+      console.error("Friends error:", error);
+      setLoading(false);
     });
 
     return unsubscribe;

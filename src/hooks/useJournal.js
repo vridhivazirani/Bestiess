@@ -42,6 +42,9 @@ export function useJournal() {
       });
       setEntries(posts);
       setLoading(false);
+    }, (error) => {
+      console.error("Journal error:", error);
+      setLoading(false);
     });
 
     return unsubscribe;

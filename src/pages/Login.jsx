@@ -7,8 +7,15 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, loginWithGoogle } = useAuth();
+  const { login, loginWithGoogle, currentUser } = useAuth();
   const navigate = useNavigate();
+
+  // Watch for auth state changes and redirect once state updates
+  React.useEffect(() => {
+    if (currentUser) {
+      navigate('/');
+    }
+  }, [currentUser, navigate]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -16,15 +23,14 @@ export default function Login() {
       setError('');
       setLoading(true);
       await login(email, password);
-      navigate('/');
     } catch (err) {
       if (err.message === "Firebase not configured") {
         setError("Firebase is missing configuration. Please update src/firebase.js with your keys.");
       } else {
-        setError("Failed to sign in. Please check your credentials.");
+        setError(`Failed to sign in: ${err.message}`);
       }
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   async function handleGoogleSignIn() {
@@ -32,15 +38,14 @@ export default function Login() {
       setError('');
       setLoading(true);
       await loginWithGoogle();
-      navigate('/');
     } catch (err) {
       if (err.message === "Firebase not configured") {
         setError("Firebase is missing configuration. Please update src/firebase.js with your keys.");
       } else {
-        setError("Failed to sign in with Google.");
+        setError(`Google login failed: ${err.message}`);
       }
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   return (
