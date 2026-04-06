@@ -20,45 +20,75 @@ const Journal = () => {
     setTxt('')
   }
 
+  const deleteEntry = (id) => {
+    setEntries(entries.filter(e => e.id !== id))
+  }
+
   return (
     <div>
-      <div className="pg-title">Mood Diary 📓</div>
+      <div className="pg-title" role="heading" aria-level={1}>Mood Diary 📓</div>
       <p className="pg-sub">~ a safe space for your daily tea and cute thoughts ~</p>
 
       <div className="jrnl-layout">
         <div>
-          {entries.map(e => (
-            <div key={e.id} className="jrnl-entry">
-              <div className="jrnl-emo">{e.emo}</div>
-              <div className="jrnl-body">
-                <div className="jrnl-dates">
-                  <span className="jrnl-dt">📅 {e.date}</span>
-                  <span className="jrnl-dt">🕐 {e.time}</span>
-                </div>
-                <p className="jrnl-txt">"{e.text}"</p>
-              </div>
+          {entries.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon">📖</div>
+              <div className="empty-title">No entries yet~</div>
+              <div className="empty-desc">Start writing your first diary entry! Every thought deserves a cute page 🌸</div>
             </div>
-          ))}
+          ) : (
+            entries.map(e => (
+              <div key={e.id} className="jrnl-entry" role="article">
+                <div className="jrnl-emo" aria-hidden="true">{e.emo}</div>
+                <div className="jrnl-body">
+                  <div className="jrnl-dates">
+                    <span className="jrnl-dt">📅 {e.date}</span>
+                    <span className="jrnl-dt">🕐 {e.time}</span>
+                  </div>
+                  <p className="jrnl-txt">"{e.text}"</p>
+                </div>
+                <button
+                  className="btn-zap"
+                  onClick={() => deleteEntry(e.id)}
+                  aria-label="Delete entry"
+                  style={{ alignSelf: 'flex-start', flexShrink: 0 }}
+                >
+                  ✕
+                </button>
+              </div>
+            ))
+          )}
         </div>
 
-        <div className="compose">
+        <div className="compose" role="form" aria-label="New diary entry">
           <p className="compose-ttl">write some tea... ☕️</p>
-          <div className="emo-row">
-            {EMOJIS.map(e => (
-              <button key={e} className={`emo-btn${emo === e ? ' on' : ''}`} onClick={() => setEmo(e)}>{e}</button>
-            ))}
-          </div>
           <textarea
             className="compose-ta"
             placeholder="what's the vibe today? ✨"
             value={txt}
             onChange={e => setTxt(e.target.value)}
+            aria-label="Diary entry text"
           />
-          <button className="btn-cute btn-pink" style={{ justifyContent: 'center' }} onClick={post}>
+          <div className="emo-row" role="radiogroup" aria-label="Choose a mood emoji">
+            {EMOJIS.map(e => (
+              <button
+                key={e}
+                className={`emo-btn${emo === e ? ' on' : ''}`}
+                onClick={() => setEmo(e)}
+                role="radio"
+                aria-checked={emo === e}
+                aria-label={`Mood: ${e}`}
+              >
+                {e}
+              </button>
+            ))}
+          </div>
+          <button className="btn-cute btn-pink" style={{ justifyContent: 'center' }} onClick={post} aria-label="Post diary entry">
             post entry ✨
           </button>
-          <div className="streak">
-            <span style={{ fontSize: '1.4rem' }}>🔥</span>
+          <div className="streak" role="status">
+            <span style={{ fontSize: '1.4rem' }} aria-hidden="true">🔥</span>
             <span className="streak-txt">3-Day Diary Streak!</span>
           </div>
         </div>
@@ -68,3 +98,4 @@ const Journal = () => {
 }
 
 export default Journal
+

@@ -33,7 +33,7 @@ const Dashboard = () => {
         <section>
           <div className="pg-head">
             <h2 className="pg-title">Current Pulse ⚡️</h2>
-            <button className="btn-cute btn-pink" onClick={() => setModal(true)}>✏️ Update Status</button>
+            <button className="btn-cute btn-pink" onClick={() => setModal(true)} aria-label="Update your status">✏️ Update Status</button>
           </div>
 
           <div className="grid-auto">
@@ -51,7 +51,7 @@ const Dashboard = () => {
                 </div>
               </div>
             ))}
-            <div className="add-card">✚ add task</div>
+            <div className="add-card" role="button" tabIndex={0} aria-label="Add new task" onKeyDown={e => e.key === 'Enter' && null}>✚ add task</div>
           </div>
         </section>
 

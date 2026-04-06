@@ -84,8 +84,8 @@ const Profile = () => {
             <div className="prog-bg"><div className="prog-fill prog-blue" style={{ width: `${petEnergy}%`, transition: 'width 0.5s ease' }} /></div>
           </div>
           <div className="pet-btns">
-            <button className="btn-feed" onClick={feed}>Feed ✨</button>
-            <button className="btn-play" onClick={play}>Play 🎀</button>
+            <button className="btn-feed" onClick={feed} aria-label="Feed your pet">Feed ✨</button>
+            <button className="btn-play" onClick={play} aria-label="Play with your pet">Play 🎀</button>
           </div>
           <p className="handwriting" style={{ color: 'var(--text-light)', fontSize: '0.95rem' }}>
             {petMood === 'eating' ? '"Nom nom nom! 🥕"' : petMood === 'playing' ? '"Wheee! So fun! 🎾"' : petEnergy < 20 ? '"Sleepy... need rest 💤"' : '"Your pet loves you so much!"'}

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&family=Patrick+Hand&family=DynaPuff:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Gaegu:wght@300;400;700&family=Patrick+Hand&family=DynaPuff:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
   --paper: #FFF8F0;
@@ -21,11 +21,13 @@
 img { max-width: 100%; height: auto; display: block; }
 
 body {
-  font-family: 'Patrick Hand', cursive;
+  font-family: 'Inter', 'Patrick Hand', sans-serif;
   color: var(--text);
   min-height: 100vh;
   overflow: hidden;
   background: #FFE8EC;
+  font-size: 0.95rem;
+  line-height: 1.5;
   cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='22'><text y='18' font-size='18'>🌸</text></svg>") 8 8, auto;
 }
 
@@ -191,11 +193,18 @@ body {
   font-weight: 700;
   margin-bottom: -2px;
   padding-bottom: 8px;
+  border-top: 3px solid var(--pink);
+  box-shadow: inset 0 3px 0 var(--pink-soft);
 }
 
 .tab:hover:not(.active) {
   background: rgba(255,255,255,0.7);
   color: var(--text);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--pink);
+  outline-offset: -2px;
 }
 
 /* Content scroll area */
@@ -904,4 +913,202 @@ body {
 
 .pet-bounce {
   animation: pet-bounce-anim 0.6s ease-in-out !important;
+}
+
+/* ─── ACCESSIBILITY: FOCUS STATES ─── */
+.btn-cute:focus-visible,
+.btn-poke:focus-visible,
+.btn-zap:focus-visible,
+.btn-buy:focus-visible,
+.btn-feed:focus-visible,
+.btn-play:focus-visible,
+.btn-nah:focus-visible,
+.emo-btn:focus-visible,
+.dock-btn:focus-visible,
+.vault-link:focus-visible,
+.qs-switch:focus-visible,
+.qs-action:focus-visible,
+.qs-cycle:focus-visible,
+.qs-val-btn:focus-visible {
+  outline: 3px solid var(--pink);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(248,164,184,0.3);
+}
+
+/* Skip to main content link for keyboard users */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  z-index: 9999;
+  padding: 8px 16px;
+  background: var(--pink);
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  border-radius: 0 0 8px 8px;
+  text-decoration: none;
+  transition: top 0.2s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* ─── EMPTY STATES ─── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 24px;
+  gap: 12px;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  opacity: 0.6;
+  animation: doodle-bob 4s ease-in-out infinite;
+}
+
+.empty-title {
+  font-family: 'DynaPuff', cursive;
+  font-size: 1.3rem;
+  color: var(--pink);
+}
+
+.empty-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
+  color: var(--text-light);
+  max-width: 300px;
+  line-height: 1.5;
+}
+
+/* ─── IMPROVED JOURNAL COMPOSER ─── */
+.compose-ta {
+  width: 100%;
+  height: 160px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 2px solid var(--paper-lines);
+  background: var(--paper);
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  color: var(--text);
+  resize: vertical;
+  outline: none;
+  min-height: 100px;
+}
+
+.emo-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.emo-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 2px solid var(--paper-lines);
+  background: var(--paper);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ─── MOBILE RESPONSIVE ─── */
+@media (max-width: 768px) {
+  /* Hide floating doodles on small screens */
+  .doodle { display: none; }
+
+  /* Top bar */
+  .topbar { padding: 0 12px; height: 38px; }
+  .topbar-brand { font-size: 0.95rem; }
+
+  /* Notebook */
+  .notebook {
+    border-radius: 12px 12px 8px 8px;
+    height: calc(100vh - 38px - 74px - 14px);
+  }
+  .notebook::before { display: none; }
+
+  .main-area { padding: 8px 8px 0; }
+  .notebook-body { padding: 16px 14px 30px; }
+
+  /* Tab bar scrollable on mobile */
+  .tab-bar {
+    height: 36px;
+    padding: 0 8px;
+    gap: 2px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .tab {
+    padding: 4px 12px;
+    font-size: 0.7rem;
+  }
+
+  /* Dock */
+  .dock { height: 68px; padding: 4px 0 10px; }
+  .dock-shelf { padding: 6px 12px; gap: 4px; border-radius: 16px; }
+  .dock-face { width: 40px; height: 40px; font-size: 1.3rem; border-radius: 12px; }
+  .dock-name { font-size: 0.6rem; }
+
+  /* Mascot */
+  .mascot { display: none; }
+
+  /* Dashboard */
+  .dash-layout { grid-template-columns: 1fr; }
+  .grid-auto { grid-template-columns: 1fr; }
+
+  /* Profile */
+  .prof-layout { grid-template-columns: 1fr; }
+  .prof-hero { flex-direction: column; text-align: center; padding: 20px; gap: 14px; }
+  .prof-ava { width: 80px; height: 80px; border-radius: 24px; }
+  .prof-name { font-size: 1.4rem; }
+  .prof-stats { justify-content: center; flex-wrap: wrap; }
+  .grid-2 { grid-template-columns: 1fr; }
+
+  /* Friends */
+  .friends-grid { grid-template-columns: 1fr; }
+
+  /* Vault */
+  .vault-grid { grid-template-columns: 1fr; }
+
+  /* Boutique */
+  .shop-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+  .shop-top { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .shop-pic { height: 100px; font-size: 3rem; }
+
+  /* Journal */
+  .jrnl-layout { grid-template-columns: 1fr; }
+  .compose { position: static; }
+
+  /* Page titles */
+  .pg-title { font-size: 1.4rem; }
+  .pg-sub { font-size: 0.85rem; }
+  .pg-head { flex-direction: column; gap: 10px; align-items: flex-start; }
+}
+
+@media (max-width: 480px) {
+  .tab-bar { gap: 1px; }
+  .tab { padding: 3px 8px; font-size: 0.65rem; }
+
+  .dock-shelf { padding: 4px 8px; gap: 2px; }
+  .dock-face { width: 34px; height: 34px; font-size: 1.1rem; border-radius: 10px; }
+  .dock-div { height: 22px; }
+
+  .notebook-body { padding: 12px 10px 24px; }
+
+  .prof-hero { padding: 14px; }
+  .buddy-pet { width: 70px; height: 70px; font-size: 2.4rem; margin-top: -35px; }
+  .buddy-bg { height: 70px; }
+
+  .shop-grid { grid-template-columns: 1fr 1fr; }
+  .shop-pic { height: 80px; font-size: 2.5rem; }
 }

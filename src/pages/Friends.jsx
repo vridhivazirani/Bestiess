@@ -11,7 +11,7 @@ const FRIENDS = [
 
 const Friends = () => (
   <div>
-    <div className="pg-title">Bestie Gallery 💕</div>
+    <div className="pg-title" role="heading" aria-level={1}>Bestie Gallery 💕</div>
     <p className="pg-sub">~ synced via TAMA protocol v3.0 ~</p>
 
     <div className="friends-grid">
@@ -26,8 +26,8 @@ const Friends = () => (
             <div className="buddy-stat">{f.status}</div>
             <p className="buddy-bio">"{f.bio}"</p>
             <div className="buddy-btns">
-              <button className="btn-poke">Poke ✨</button>
-              <button className="btn-zap">⚡</button>
+              <button className="btn-poke" aria-label={`Poke ${f.name}`}>Poke ✨</button>
+              <button className="btn-zap" aria-label={`Send energy to ${f.name}`}>⚡</button>
             </div>
           </div>
         </div>

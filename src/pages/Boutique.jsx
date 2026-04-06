@@ -35,7 +35,7 @@ const Boutique = () => (
           <div className="shop-info">
             <span className={rarityPill(item.rarity)}>★ {item.rarity}</span>
             <p className="shop-nm">{item.name}</p>
-            <button className="btn-buy">🪙 {item.price} — Buy Now</button>
+            <button className="btn-buy" aria-label={`Buy ${item.name} for ${item.price} coins`}>🪙 {item.price} — Buy Now</button>
           </div>
         </div>
       ))}
