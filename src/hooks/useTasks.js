@@ -16,43 +16,29 @@ export function useTasks() {
 
     const q = query(
       collection(db, 'tasks'),
-      where('authorId', '==', currentUser.uid),
-      orderBy('createdAt', 'desc')
-    );
-    
-    // Fallback if index fails
-    const fallbackQ = query(
-      collection(db, 'tasks'),
       where('authorId', '==', currentUser.uid)
     );
     
-    const trySnapshot = (usedQuery) => {
-      return onSnapshot(usedQuery, (snapshot) => {
-        const posts = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        
-        // If using fallback query, we sort it locally
-        if (usedQuery === fallbackQ) {
-          posts.sort((a, b) => (b.createdAt?.toMillis() || 0) - (a.createdAt?.toMillis() || 0));
-        }
-        
-        setTasks(posts);
-        setLoading(false);
-      }, (error) => {
-        console.error("Tasks listener error (might need an index):", error);
-        // If it was the indexed query that failed due to a missing composite index, try the simple query
-        if (usedQuery === q && error.code === 'failed-precondition') {
-          console.log("Falling back to unindexed query for tasks.");
-          unsubscribe = trySnapshot(fallbackQ);
-        } else {
-           setLoading(false);
-        }
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const posts = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      // Sort locally by createdAt to bypass Firebase's requirement for a manual composite index
+      posts.sort((a, b) => {
+        const timeA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+        const timeB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        return timeB - timeA;
       });
-    };
+      
+      setTasks(posts);
+      setLoading(false);
+    }, (error) => {
+      console.error("Tasks listener error:", error);
+      setLoading(false);
+    });
 
-    let unsubscribe = trySnapshot(q);
     return () => unsubscribe();
   }, [currentUser]);
 
