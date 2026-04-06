@@ -8,16 +8,16 @@ const Friends = () => {
   const [showQR, setShowQR] = useState(false);
   const [showScanner, setShowScanner] = useState(false);
 
-  const handleScan = (data) => {
+  const handleScan = async (data) => {
     try {
       const parsed = JSON.parse(data);
       if (parsed.action === 'add_friend' && parsed.username) {
-        requestFriend(parsed.username);
+        await requestFriend(parsed.username);
         setShowScanner(false);
-        alert(`Friend request sent to @${parsed.username}!`);
+        alert(`Successfully connected with @${parsed.username}! ✨`);
       }
     } catch (e) {
-      alert("Invalid QR code!");
+      alert(e.message || "Invalid QR code!");
       setShowScanner(false);
     }
   };

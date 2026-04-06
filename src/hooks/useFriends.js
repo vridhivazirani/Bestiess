@@ -1,52 +1,74 @@
 import { useState, useEffect } from 'react';
-import { collection, query, where, onSnapshot, addDoc, serverTimestamp, getDocs, doc, updateDoc } from 'firebase/firestore';
+import { collection, query, onSnapshot, getDocs, where } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 
 export function useFriends() {
   const [friends, setFriends] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { currentUser } = useAuth();
+  const { currentUser, userData, updateProfile } = useAuth();
 
   useEffect(() => {
-    if (!db || !currentUser) {
+    if (!db || !currentUser || !userData) {
       setLoading(false);
       return;
     }
-
-    // A complete implementation would listen to 'friends' collection 
-    // where array-contains uid, then fetch the user profiles.
-    // For simplicity in this demo, let's assume we store friend user blocks 
-    // directly, or we fetch the "users" collection directly and show registered users as potential besties.
-    
-    // So let's just fetch ALL users except ourselves for now 
-    // to simulate finding people in the community to friend.
-    // In a real app we'd have a separate 'friend_relations' table.
 
     const q = query(collection(db, 'users'));
     
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const allUsers = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const otherUsers = allUsers.filter(u => u.uid !== currentUser.uid);
-      setFriends(otherUsers);
+      
+      // Filter the global users list to strictly those who we've added (or who added us)
+      // And we definitely don't want to list ourselves!
+      const myFriendsList = userData.friendIds || [];
+      const connections = allUsers.filter(u => u.uid !== currentUser.uid && myFriendsList.includes(u.uid));
+      
+      setFriends(connections);
       setLoading(false);
     }, (error) => {
-      console.error("Friends error:", error);
+      console.error("Friends gallery read failed:", error);
       setLoading(false);
     });
 
     return unsubscribe;
-  }, [currentUser]);
+  }, [currentUser, userData?.friendIds]);
 
   const requestFriend = async (targetUsername) => {
     if (!db || !currentUser) return;
-    // In a full implementation, you'd find the user by targetUsername and send a friendship doc
-    console.log("Friend request sent to", targetUsername);
+    
+    try {
+      // Find the user by exactly matching their @username
+      const usersRef = collection(db, 'users');
+      const q = query(usersRef, where("username", "==", targetUsername));
+      const snap = await getDocs(q);
+      
+      if (snap.empty) {
+        throw new Error("No user found with that username!");
+      }
+
+      const targetUID = snap.docs[0].data().uid;
+
+      if (targetUID === currentUser.uid) {
+        throw new Error("You can't add yourself!");
+      }
+
+      const existingFriends = userData.friendIds || [];
+      if (!existingFriends.includes(targetUID)) {
+        await updateProfile({ friendIds: [...existingFriends, targetUID] });
+        console.log(`Friend ${targetUsername} successfully synced to database!`);
+      } else {
+        throw new Error("You are already besties!");
+      }
+
+    } catch (e) {
+      console.error(e);
+      throw e; // Pass to UI to alert
+    }
   };
 
   const poke = async (friendId) => {
     console.log("Poked friend!", friendId);
-    // Here we could add a notification doc
   }
 
   const zap = async (friendId) => {

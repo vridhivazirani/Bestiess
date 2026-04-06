@@ -1,41 +1,57 @@
 import React from 'react'
+import { useTasks } from '../hooks/useTasks'
 
-const PROJECTS = [
-  { id: 201, title: 'Portfolio Revamp', date: '2024-03-20', icon: '🚀', friends: ['V', 'S'] },
-  { id: 202, title: 'Sync Protocol v1.0', date: '2024-03-15', icon: '🔒', friends: ['S', 'M'] },
-  { id: 203, title: 'Bestie Icon Pack', date: '2024-03-10', icon: '🎨', friends: ['M', 'V'] },
-  { id: 204, title: 'Mood Tracker App', date: '2024-02-28', icon: '🌸', friends: ['A', 'L'] },
-]
+const Vault = () => {
+  const { tasks, loading } = useTasks()
+  const archived = tasks.filter(t => t.status === 'Done')
 
-const Vault = () => (
-  <div>
-    <div className="pg-title">Project Vault 🏆</div>
-    <p className="pg-sub">~ sacred archives of synchronized achievements ~</p>
+  return (
+    <div>
+      <div className="pg-title">Project Vault 🏆</div>
+      <p className="pg-sub">~ sacred archives of synchronized achievements ~</p>
 
-    <div className="vault-grid">
-      {PROJECTS.map(p => (
-        <div key={p.id} className="vault-card">
-          <div className="vault-top">
-            <div className="vault-ico">{p.icon}</div>
-            <div>
-              <p className="vault-name">{p.title}</p>
-              <span className="pill pill-green">✔ synced</span>
-            </div>
-          </div>
-          <div className="vault-meta">
-            <div><div className="vault-label">archived</div><div className="vault-val">{p.date}</div></div>
-            <div style={{ textAlign: 'right' }}><div className="vault-label">project id</div><div className="vault-val" style={{ color: 'var(--pink)' }}>#SR_{p.id}</div></div>
-          </div>
-          <div className="vault-foot">
-            <div className="ava-stack">
-              {p.friends.map((f,i) => <div key={i} className="ava-item">{f}</div>)}
-            </div>
-            <button className="vault-link">browse tea →</button>
-          </div>
+      {loading ? (
+        <div className="empty-state">
+          <div className="empty-title">Loading archives...</div>
         </div>
-      ))}
+      ) : archived.length === 0 ? (
+        <div className="empty-state">
+          <div className="empty-title">No completed projects yet!</div>
+          <div className="empty-desc">When you mark a task as "Done" on the dashboard, it gets immortalized here!</div>
+        </div>
+      ) : (
+        <div className="vault-grid">
+          {archived.map(p => (
+            <div key={p.id} className="vault-card">
+              <div className="vault-top">
+                <div className="vault-ico">{p.icon}</div>
+                <div>
+                  <p className="vault-name">{p.title}</p>
+                  <span className="pill pill-green">✔ synced</span>
+                </div>
+              </div>
+              <div className="vault-meta">
+                <div>
+                  <div className="vault-label">archived on</div>
+                  <div className="vault-val">{p.createdAt?.toDate ? p.createdAt.toDate().toLocaleDateString() : 'Just now'}</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div className="vault-label">project id</div>
+                  <div className="vault-val" style={{ color: 'var(--pink)' }}>#SR_{p.id.slice(0,4).toUpperCase()}</div>
+                </div>
+              </div>
+              <div className="vault-foot">
+                <div className="ava-stack">
+                  <div className="ava-item">{p.who.charAt(0)}</div>
+                </div>
+                <button className="vault-link">browse tea →</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
-  </div>
-)
+  )
+}
 
 export default Vault

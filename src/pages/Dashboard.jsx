@@ -21,13 +21,15 @@ const Dashboard = () => {
   const [taskIcon, setTaskIcon] = useState('🎀')
   const [taskColor, setTaskColor] = useState('#FFDDE2')
 
-  const post = async () => {
+  const post = () => {
     if (!txt.trim() || isPosting) return
-    setIsPosting(true)
-    await postUpdate(txt)
+    
+    // We intentionally DO NOT wait for this to finish before closing the modal
+    // so the app feels 100x faster and more optimistic.
+    postUpdate(txt)
+    
     setTxt('')
     setModal(false)
-    setIsPosting(false)
   }
 
   const handleAddTask = async (e) => {
@@ -46,6 +48,8 @@ const Dashboard = () => {
     updateTaskStatus(id, next)
   }
 
+  const activeTasks = tasks.filter(t => t.status !== 'Done')
+
   return (
     <div>
       <div className="dash-layout">
@@ -60,7 +64,7 @@ const Dashboard = () => {
               <div style={{ padding: 20, fontFamily: 'Gaegu', color: 'var(--text-light)' }}>Loading tasks...</div>
             ) : (
               <>
-                {tasks.map(t => (
+                {activeTasks.map(t => (
                   <div key={t.id} className="task-card" style={{ background: `linear-gradient(135deg, white 60%, ${t.color} 100%)`, cursor: 'pointer' }} onClick={() => cycleStatus(t.id, t.status)}>
                     
                     <button 
