@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 
 const TABS = [
   { path: '/',         emoji: '🏠', label: 'Pulse' },
@@ -27,6 +28,7 @@ function Clock() {
 
 const Layout = ({ children }) => {
   const loc = useLocation()
+  const { userData, logout } = useAuth()
 
   return (
     <div className="desktop">
@@ -52,8 +54,11 @@ const Layout = ({ children }) => {
           <span aria-label="Favorites">♥</span>
           <span aria-label="Messages">✉️</span>
           <span aria-label="Current time"><Clock /></span>
-          <div className="topbar-ava">
-            <img src="https://api.dicebear.com/9.x/lorelei/svg?seed=KawaiiGirl" alt="Profile avatar" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {userData && <span style={{ fontFamily: 'Gaegu', fontWeight: 700 }}>{userData.displayName}</span>}
+            <div className="topbar-ava" style={{ cursor: 'pointer' }} onClick={() => logout().catch(console.error)} title="Click to Logout">
+              <img src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${userData?.avatar || 'KawaiiGirl'}`} alt="Profile avatar" />
+            </div>
           </div>
         </div>
       </header>

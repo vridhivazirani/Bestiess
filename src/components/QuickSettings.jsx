@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import { useAuth } from '../contexts/AuthContext'
 
 const THEMES = [
   { id: 'kawaii', label: 'Kawaii Pink 🌸', accent: '#F8A4B8', bg: '#FFE8EC' },
@@ -10,6 +11,8 @@ const THEMES = [
 const PRIVACY = ['Public 🌍', 'Friends Only 🔒', 'Private 🔐']
 
 export default function QuickSettings() {
+  const { userData, updateProfile } = useAuth();
+  
   // ─── Real-time clock ───
   const [now, setNow] = useState(new Date())
   useEffect(() => {
@@ -27,52 +30,49 @@ export default function QuickSettings() {
     return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off) }
   }, [])
 
-  // ─── Theme ───
-  const [themeIdx, setThemeIdx] = useState(() => {
-    const saved = localStorage.getItem('bestiess-theme')
-    return saved ? parseInt(saved, 10) : 0
-  })
+  // If no userData loaded yet, render a skeleton
+  if (!userData || !userData.settings) return <div className="qs-panel"><p>Loading settings...</p></div>;
 
+  const { theme, privacy, notifs, dnd } = userData.settings;
+
+  // Apply theme dynamically
   useEffect(() => {
-    localStorage.setItem('bestiess-theme', themeIdx)
-    const t = THEMES[themeIdx]
+    const t = THEMES[theme] || THEMES[0]
     document.documentElement.style.setProperty('--pink', t.accent)
     document.documentElement.style.setProperty('--heart', t.accent)
     document.body.style.background = t.bg
-  }, [themeIdx])
+  }, [theme])
 
-  const cycleTheme = () => setThemeIdx(i => (i + 1) % THEMES.length)
-
-  // ─── Privacy ───
-  const [privIdx, setPrivIdx] = useState(() => {
-    const saved = localStorage.getItem('bestiess-privacy')
-    return saved ? parseInt(saved, 10) : 1
-  })
-
-  useEffect(() => { localStorage.setItem('bestiess-privacy', privIdx) }, [privIdx])
-  const cyclePrivacy = () => setPrivIdx(i => (i + 1) % PRIVACY.length)
-
-  // ─── Notifications ───
-  const [notifs, setNotifs] = useState(() => localStorage.getItem('bestiess-notifs') !== 'off')
-  useEffect(() => { localStorage.setItem('bestiess-notifs', notifs ? 'on' : 'off') }, [notifs])
-
-  // ─── DND mode ───
-  const [dnd, setDnd] = useState(() => localStorage.getItem('bestiess-dnd') === 'on')
-  useEffect(() => { localStorage.setItem('bestiess-dnd', dnd ? 'on' : 'off') }, [dnd])
+  const cycleTheme = () => updateProfile({ settings: { ...userData.settings, theme: (theme + 1) % THEMES.length } })
+  const cyclePrivacy = () => updateProfile({ settings: { ...userData.settings, privacy: (privacy + 1) % PRIVACY.length } })
+  const toggleNotifs = () => updateProfile({ settings: { ...userData.settings, notifs: !notifs } })
+  const toggleDnd = () => updateProfile({ settings: { ...userData.settings, dnd: !dnd } })
 
   // ─── Display name ───
-  const [name, setName] = useState(() => localStorage.getItem('bestiess-name') || 'Vridhi Vazirani')
+  const [name, setName] = useState(userData.displayName || '')
   const [editing, setEditing] = useState(false)
   const inputRef = useRef()
-  useEffect(() => { localStorage.setItem('bestiess-name', name) }, [name])
   useEffect(() => { if (editing && inputRef.current) inputRef.current.focus() }, [editing])
 
-  // ─── Status message ───
-  const [status, setStatus] = useState(() => localStorage.getItem('bestiess-status') || '✨ Building cute things!')
-  const [editingStatus, setEditingStatus] = useState(false)
-  const statusRef = useRef()
-  useEffect(() => { localStorage.setItem('bestiess-status', status) }, [status])
-  useEffect(() => { if (editingStatus && statusRef.current) statusRef.current.focus() }, [editingStatus])
+  const saveName = () => {
+    setEditing(false);
+    if (name.trim() !== userData.displayName) {
+      updateProfile({ displayName: name.trim() });
+    }
+  }
+
+  // ─── Status/Bio message ───
+  const [bio, setBio] = useState(userData.bio || '')
+  const [editingBio, setEditingBio] = useState(false)
+  const bioRef = useRef()
+  useEffect(() => { if (editingBio && bioRef.current) bioRef.current.focus() }, [editingBio])
+
+  const saveBio = () => {
+    setEditingBio(false);
+    if (bio.trim() !== userData.bio) {
+      updateProfile({ bio: bio.trim() });
+    }
+  }
 
   const dateStr = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
   const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
@@ -100,33 +100,33 @@ export default function QuickSettings() {
             className="qs-input"
             value={name}
             onChange={e => setName(e.target.value)}
-            onBlur={() => setEditing(false)}
-            onKeyDown={e => e.key === 'Enter' && setEditing(false)}
+            onBlur={saveName}
+            onKeyDown={e => e.key === 'Enter' && saveName()}
             maxLength={30}
           />
         ) : (
-          <button className="qs-val-btn" onClick={() => setEditing(true)}>
-            {name} ✏️
+          <button className="qs-val-btn" onClick={() => setEditing(true)} aria-label="Edit display name">
+            {userData.displayName} ✏️
           </button>
         )}
       </div>
 
-      {/* Status */}
+      {/* Bio */}
       <div className="qs-row">
         <span className="qs-label">Status</span>
-        {editingStatus ? (
+        {editingBio ? (
           <input
-            ref={statusRef}
+            ref={bioRef}
             className="qs-input"
-            value={status}
-            onChange={e => setStatus(e.target.value)}
-            onBlur={() => setEditingStatus(false)}
-            onKeyDown={e => e.key === 'Enter' && setEditingStatus(false)}
+            value={bio}
+            onChange={e => setBio(e.target.value)}
+            onBlur={saveBio}
+            onKeyDown={e => e.key === 'Enter' && saveBio()}
             maxLength={50}
           />
         ) : (
-          <button className="qs-val-btn" onClick={() => setEditingStatus(true)}>
-            {status} ✏️
+          <button className="qs-val-btn" onClick={() => setEditingBio(true)} aria-label="Edit bio">
+            {userData.bio} ✏️
           </button>
         )}
       </div>
@@ -134,16 +134,16 @@ export default function QuickSettings() {
       {/* Theme */}
       <div className="qs-row">
         <span className="qs-label">Theme</span>
-        <button className="pill pill-pink qs-cycle" onClick={cycleTheme} style={{ cursor: 'pointer', fontSize: '0.75rem' }}>
-          {THEMES[themeIdx].label}
+        <button className="pill pill-pink qs-cycle" onClick={cycleTheme} style={{ cursor: 'pointer', fontSize: '0.75rem' }} aria-label="Cycle theme">
+          {THEMES[theme]?.label}
         </button>
       </div>
 
       {/* Privacy */}
       <div className="qs-row">
         <span className="qs-label">Privacy</span>
-        <button className="pill pill-blue qs-cycle" onClick={cyclePrivacy} style={{ cursor: 'pointer', fontSize: '0.75rem' }}>
-          {PRIVACY[privIdx]}
+        <button className="pill pill-blue qs-cycle" onClick={cyclePrivacy} style={{ cursor: 'pointer', fontSize: '0.75rem' }} aria-label="Cycle privacy">
+          {PRIVACY[privacy]}
         </button>
       </div>
 
@@ -151,69 +151,15 @@ export default function QuickSettings() {
       <div className="qs-toggles">
         <div className="qs-toggle-row">
           <span className="qs-label">🔔 Notifications</span>
-          <button className={`qs-switch ${notifs ? 'on' : ''}`} onClick={() => setNotifs(n => !n)}>
+          <button className={`qs-switch ${notifs ? 'on' : ''}`} onClick={toggleNotifs} aria-label="Toggle notifications">
             <span className="qs-knob" />
           </button>
         </div>
         <div className="qs-toggle-row">
           <span className="qs-label">🌙 Do Not Disturb</span>
-          <button className={`qs-switch ${dnd ? 'on' : ''}`} onClick={() => setDnd(d => !d)}>
+          <button className={`qs-switch ${dnd ? 'on' : ''}`} onClick={toggleDnd} aria-label="Toggle do not disturb">
             <span className="qs-knob" />
           </button>
-        </div>
-      </div>
-
-      {/* Quick links */}
-      <div className="qs-quick-links">
-        <span className="qs-label" style={{ marginBottom: 6, display: 'block' }}>Quick Actions</span>
-        <div className="qs-btn-row">
-          <button className="qs-action" onClick={() => { localStorage.clear(); window.location.reload() }}>
-            🗑️ Reset All
-          </button>
-          <button className="qs-action" onClick={() => {
-            const data = {
-              theme: themeIdx,
-              privacy: privIdx,
-              notifs,
-              dnd,
-              name,
-              status,
-            }
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-            const url = URL.createObjectURL(blob)
-            const a = document.createElement('a')
-            a.href = url
-            a.download = 'bestiess-settings.json'
-            a.click()
-            URL.revokeObjectURL(url)
-          }}>
-            💾 Export
-          </button>
-          <label className="qs-action" style={{ cursor: 'pointer' }}>
-            📂 Import
-            <input
-              type="file"
-              accept=".json"
-              style={{ display: 'none' }}
-              onChange={e => {
-                const file = e.target.files[0]
-                if (!file) return
-                const reader = new FileReader()
-                reader.onload = ev => {
-                  try {
-                    const d = JSON.parse(ev.target.result)
-                    if (d.theme !== undefined) setThemeIdx(d.theme)
-                    if (d.privacy !== undefined) setPrivIdx(d.privacy)
-                    if (d.notifs !== undefined) setNotifs(d.notifs)
-                    if (d.dnd !== undefined) setDnd(d.dnd)
-                    if (d.name) setName(d.name)
-                    if (d.status) setStatus(d.status)
-                  } catch { /* ignore bad files */ }
-                }
-                reader.readAsText(file)
-              }}
-            />
-          </label>
         </div>
       </div>
     </div>

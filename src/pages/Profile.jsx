@@ -1,33 +1,51 @@
 import React, { useState, useEffect } from 'react'
 import QuickSettings from '../components/QuickSettings'
+import { useAuth } from '../contexts/AuthContext'
 
 const Profile = () => {
+  const { userData, updateProfile } = useAuth()
+  
   const [petHappy, setPetHappy] = useState(100)
-  const [petEnergy, setPetEnergy] = useState(82)
+  const [petEnergy, setPetEnergy] = useState(100)
   const [petMood, setPetMood] = useState('happy')
 
+  useEffect(() => {
+    if (userData) {
+      setPetHappy(userData.petHappy ?? 100);
+      setPetEnergy(userData.petEnergy ?? 100);
+    }
+  }, [userData])
+
   const feed = () => {
-    setPetEnergy(e => Math.min(100, e + 12))
-    setPetHappy(h => Math.min(100, h + 5))
-    setPetMood('eating')
-    setTimeout(() => setPetMood('happy'), 1500)
+    const newEnergy = Math.min(100, petEnergy + 12);
+    const newHappy = Math.min(100, petHappy + 5);
+    setPetEnergy(newEnergy);
+    setPetHappy(newHappy);
+    setPetMood('eating');
+    setTimeout(() => setPetMood('happy'), 1500);
+    updateProfile({ petEnergy: newEnergy, petHappy: newHappy });
   }
 
   const play = () => {
-    setPetEnergy(e => Math.max(0, e - 8))
-    setPetHappy(h => Math.min(100, h + 15))
-    setPetMood('playing')
-    setTimeout(() => setPetMood('happy'), 2000)
+    const newEnergy = Math.max(0, petEnergy - 8);
+    const newHappy = Math.min(100, petHappy + 15);
+    setPetEnergy(newEnergy);
+    setPetHappy(newHappy);
+    setPetMood('playing');
+    setTimeout(() => setPetMood('happy'), 2000);
+    updateProfile({ petEnergy: newEnergy, petHappy: newHappy });
   }
 
-  // Pet energy slowly drains
+  // Pet energy slowly drains (simplified version that doesn't constantly write to DB)
   useEffect(() => {
     const id = setInterval(() => {
       setPetEnergy(e => Math.max(0, e - 1))
       setPetHappy(h => Math.max(0, h - 0.5))
-    }, 30000) // every 30s
+    }, 60000) // every 60s
     return () => clearInterval(id)
   }, [])
+
+  if (!userData) return <div className="empty-state"><div className="empty-title">Loading Hub...</div></div>;
 
   const petEmoji = petMood === 'eating' ? '🥕' : petMood === 'playing' ? '🎾' : petEnergy < 20 ? '😴' : '🐰'
 
@@ -40,18 +58,18 @@ const Profile = () => {
         <div>
           <div className="prof-hero">
             <div className="prof-ava">
-              <img src="https://api.dicebear.com/9.x/lorelei/svg?seed=KawaiiGirl" alt="Me" />
+              <img src={`https://api.dicebear.com/9.x/lorelei/svg?seed=${userData.avatar || 'KawaiiGirl'}`} alt="Me" />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-                <p className="prof-name">{localStorage.getItem('bestiess-name') || 'Vridhi Vazirani'}</p>
+                <p className="prof-name">{userData.displayName}</p>
                 <span className="pill pill-pink">Elite Syncer 🌟</span>
               </div>
-              <p className="prof-bio">"{localStorage.getItem('bestiess-status') || 'Building the cutest things on the web! 🎀✨'}"</p>
+              <p className="prof-bio">"{userData.bio}"</p>
               <div className="prof-stats">
                 <div className="stat"><div className="stat-n">42</div><div className="stat-l">Tasks</div></div>
                 <div className="stat"><div className="stat-n" style={{ color: 'var(--sky)' }}>12</div><div className="stat-l">Besties</div></div>
-                <div className="stat"><div className="stat-n" style={{ color: '#E8A040' }}>Lv.15</div><div className="stat-l">Rank</div></div>
+                <div className="stat"><div className="stat-n" style={{ color: '#E8A040' }}>Lv.{userData.level}</div><div className="stat-l">Rank</div></div>
               </div>
             </div>
           </div>
@@ -72,7 +90,7 @@ const Profile = () => {
           <div className="kawaii-header" style={{ fontSize: '1.2rem' }}>Pet Evolution 🐰</div>
           <div className={`pet-face ${petMood !== 'happy' ? 'pet-bounce' : ''}`}>{petEmoji}</div>
           <div style={{ textAlign: 'left', width: '100%' }}>
-            <p style={{ fontFamily: "'DynaPuff', cursive", fontSize: '1rem', marginBottom: 4 }}>Sugar Bunny</p>
+            <p style={{ fontFamily: "'DynaPuff', cursive", fontSize: '1rem', marginBottom: 4 }}>{userData.petName || 'Sugar Bunny'}</p>
             <span className="pill pill-pink">{petEnergy > 80 ? 'MAX ENERGY!' : petEnergy < 20 ? 'Sleepy...' : 'Active ✨'}</span>
           </div>
           <div className="prog-wrap">
