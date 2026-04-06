@@ -8,12 +8,12 @@ import { getFirestore } from "firebase/firestore";
 // 3. Add a Web App to the project
 // 4. Copy the config object below
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyCLBOIAoKLABoH3tiRJOf8jbZE-ZFHTACs",
+  authDomain: "bestieee-a4762.firebaseapp.com",
+  projectId: "bestieee-a4762",
+  storageBucket: "bestieee-a4762.firebasestorage.app",
+  messagingSenderId: "283469968501",
+  appId: "1:283469968501:web:03dfb9b726e81a2d13f43c"
 };
 
 // Initialize Firebase only if the API key has been changed from the placeholder
